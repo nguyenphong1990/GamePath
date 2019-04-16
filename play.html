@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>GAME MINI</title>
+    <style>
+        * { padding: 0; margin: 0; }
+        canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+ 
+<canvas id="myCanvas" width="480" height="384"></canvas>
+ 
+<script>
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+	
+	var brickRowCount = 10;
+	var brickColumnCount = 8;
+	var brickWidth = 40;
+	var brickHeight = 40;
+	var brickPadding = 3;
+	var brickOffsetTop = 30;
+	var brickOffsetLeft = 30;
+	
+	var score = 0;
+	var lives = 3;
+
+	var bricks = [];
+	for(c=0; c<brickColumnCount; c++) {
+		bricks[c] = [];
+		for(r=0; r<brickRowCount; r++) {
+			bricks[c][r] = { x: 0, y: 0, status: 1 };
+		}
+	}
+	
+	function drawBricks() {
+		for(c=0; c<brickColumnCount; c++) {
+			for(r=0; r<brickRowCount; r++) {
+				if(bricks[c][r].status == 1) {
+					var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+					var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+					bricks[c][r].x = brickX;
+					bricks[c][r].y = brickY;
+					ctx.beginPath();
+					ctx.rect(brickX, brickY, brickWidth, brickHeight);
+					ctx.fillStyle = "#0095DD";
+					ctx.fill();
+					ctx.closePath();
+				}
+			}
+		}
+	}
+	drawBricks();
+</script>
+ 
+</body>
+</html>
