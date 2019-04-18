@@ -10,14 +10,13 @@ var game = new Phaser.Game(1000, 800, Phaser.AUTO, '', { preload: preload, creat
 
 function preload() {
 
-    game.load.baseURL = 'http://examples.phaser.io/assets/';
-    game.load.crossOrigin = 'anonymous';
-    game.load.image('zone', 'particles/red.png');
-    game.load.image('arrow', 'sprites/arrow.png');
+    //game.load.baseURL = 'http://examples.phaser.io/assets/';
+    //game.load.crossOrigin = 'anonymous';
+    game.load.image('zone', "./assets/particles/red.png");
+    game.load.image('arrow', "./assets/sprites/arrow.png");
 }
 
 var card = [];
-var map = [];
 var dropZone1;
 var dragPosition;
 
@@ -31,17 +30,33 @@ function drawRec(color, x, y, s) {
 }
 
 
-var maps = [[1, 0 ,0 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0],
+var maps = [[0, 0 ,0 ,0, 0, 0, 0 ,0],
+            [1, 1 ,1 ,0, 0, 0, 0 ,0],
+            [0, 0 ,1 ,0, 0, 0, 0 ,0],
+            [0, 0 ,0 ,1, 1, 1, 0 ,0],
+            [0, 0 ,0 ,0, 0, 1, 1 ,1],
             [0, 0 ,0 ,0, 0, 0, 0 ,0],
             [0, 0 ,0 ,0, 0, 0, 0 ,0],
             [0, 0 ,0 ,0, 0, 0, 0 ,0]];
 
 function create() {
-
+	
+	var bricks = [];
+	for(c=0; c<8; c++) {
+		bricks[c] = [];
+		for(r=0; r<8; r++) {
+			bricks[c][r] = { x: 0, y: 0, type : 1, org: 1 };
+		}
+	}
+	
+	for(c = 0; c < 8; c++)
+    {
+        for(x = 0; x < 8; x++)
+        {
+			bricks[c][x].type =  maps[c][x];
+		}
+	}
+			
     dropZone1 = game.add.sprite(200, 0, 'zone');
     dropZone1.width = 800;
     dropZone1.height = 800;
@@ -50,9 +65,9 @@ function create() {
     {
         for(x = 0; x < 8; x++)
         {
-            if(maps[c][x]  === 0)
+            if(bricks[x][c].type  === 0)  // wall 
                 drawRec("#FF0000", 200 + c * 100, x * 95, 90);
-            else
+            else		// path
                 drawRec("#00FF00", 200 + c * 100, x * 95, 90);
         }
     }
@@ -96,11 +111,10 @@ function onDragStart(sprite, pointer) {
 
 
 function onDragStop(sprite, pointer) {
-    if (!sprite.overlap(dropZone1) && !sprite.overlap(dropZone2))
+    if (!sprite.overlap(dropZone1))
     {
         game.add.tween(sprite).to( { x: dragPosition.x, y: dragPosition.y }, 500, "Back.easeOut", true);
     }
-
 }
 
 function update () {
