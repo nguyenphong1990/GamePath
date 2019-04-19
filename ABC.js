@@ -13,13 +13,42 @@ function preload() {
     //game.load.baseURL = 'http://examples.phaser.io/assets/';
     //game.load.crossOrigin = 'anonymous';
     game.load.image('zone', "./assets/particles/red.png");
-    game.load.image('arrow', "./assets/sprites/arrow.png");
+    game.load.image('up', "./assets/sprites/UP.png");
+	game.load.image('down', "./assets/sprites/DOWN.png");
+	game.load.image('left', "./assets/sprites/LEFT.png");
+	game.load.image('right', "./assets/sprites/RIGHT.png");
 }
 
-var card = [];
-var dropZone1;
+const OBJECT_SIZE 	= 95
+const PADDING_SIZE	= 5
+
+const 	LEFT =	2
+const 	RIGHT =	3
+const 	UP 	 =	4
+const 	DOWN  =	5
+
+const WALL = 0
+const PATH	= 1
+
+
+var background;
 var dragPosition;
 
+var paths = [];
+var maps = [];
+
+var path_1 = [LEFT, RIGHT, UP, DOWN];
+
+var maps_1 = [[0, 0 ,0 ,0, 0, 0, 0 ,0],
+            [1, 1 ,1 ,0, 0, 0, 0 ,0],
+            [0, 0 ,1 ,0, 0, 0, 0 ,0],
+            [0, 0 ,0 ,1, 1, 1, 0 ,0],
+            [0, 0 ,0 ,0, 0, 1, 1 ,1],
+            [0, 0 ,0 ,0, 0, 0, 0 ,0],
+            [0, 0 ,0 ,0, 0, 0, 0 ,0],
+            [0, 0 ,0 ,0, 0, 0, 0 ,0]];
+
+			
 function drawRec(color, x, y, s) {
     var bmd = game.make.bitmapData(s, s);
     bmd.ctx.beginPath();
@@ -30,64 +59,69 @@ function drawRec(color, x, y, s) {
 }
 
 
-var maps = [[0, 0 ,0 ,0, 0, 0, 0 ,0],
-            [1, 1 ,1 ,0, 0, 0, 0 ,0],
-            [0, 0 ,1 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,1, 1, 1, 0 ,0],
-            [0, 0 ,0 ,0, 0, 1, 1 ,1],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0],
-            [0, 0 ,0 ,0, 0, 0, 0 ,0]];
-
 function create() {
 	
-	var bricks = [];
+	/* Init maps */
 	for(c=0; c<8; c++) {
-		bricks[c] = [];
+		maps[c] = [];
 		for(r=0; r<8; r++) {
-			bricks[c][r] = { x: 0, y: 0, type : 1, org: 1 };
+			maps[c][r] = { x : 0, y : 0, type : maps_1[c][r], org: 1 };
 		}
 	}
 	
-	for(c = 0; c < 8; c++)
-    {
-        for(x = 0; x < 8; x++)
-        {
-			bricks[c][x].type =  maps[c][x];
-		}
-	}
-			
-    dropZone1 = game.add.sprite(200, 0, 'zone');
-    dropZone1.width = 800;
-    dropZone1.height = 800;
+    background = game.add.sprite(200, 0, 'zone');
+    background.width = 800;
+    background.height = 800;
     
     for(c = 0; c < 8; c++)
     {
         for(x = 0; x < 8; x++)
         {
-            if(bricks[x][c].type  === 0)  // wall 
-                drawRec("#FF0000", 200 + c * 100, x * 95, 90);
+            if(maps[x][c].type  === WALL)  // wall 
+			{
+                drawRec("#FF0000", 200 + c * (OBJECT_SIZE +PADDING_SIZE), x * (OBJECT_SIZE +PADDING_SIZE), OBJECT_SIZE);
+			}
             else		// path
-                drawRec("#00FF00", 200 + c * 100, x * 95, 90);
+			{
+                drawRec("#00FF00", 200 + c * (OBJECT_SIZE +PADDING_SIZE), x * (OBJECT_SIZE +PADDING_SIZE), OBJECT_SIZE);
+			}
+			
+			maps[x][c].x = 200 + c * (OBJECT_SIZE +PADDING_SIZE);
+			maps[x][c].y = x * (OBJECT_SIZE +PADDING_SIZE);
         }
     }
     
-    for(c = 0; c < 8; c++)
+	/* Init path */	
+    for(c = 0; c < path_1.length; c++)
     {
-        card[c] = game.add.sprite(100, 100 + c * 100, 'arrow');
-        card[c].width = 95;
-        card[c].height = 95;
-        card[c].anchor.set(0.5, 0.5);
-        card[c].angle = c  * 90;
-        card[c].inputEnabled = true;
-        card[c].input.enableDrag();
-        card[c].events.onInputOver.add(onOver, this);
-        card[c].events.onInputOut.add(onOut, this);
-        card[c].events.onDragStart.add(onDragStart, this);
-        card[c].events.onDragStop.add(onDragStop, this);
+		if(path_1[c] == UP)
+		{
+			paths[c] = game.add.sprite(100, 100 + c * (OBJECT_SIZE +PADDING_SIZE), 'up');
+		}
+		if(path_1[c] == LEFT)
+		{
+			paths[c] = game.add.sprite(100, 100 + c * (OBJECT_SIZE +PADDING_SIZE), 'left');
+		}
+		if(path_1[c] == RIGHT)
+		{
+			paths[c] = game.add.sprite(100, 100 + c * (OBJECT_SIZE +PADDING_SIZE), 'right');
+		}
+		if(path_1[c] == DOWN)
+		{
+			paths[c] = game.add.sprite(100, 100 + c * (OBJECT_SIZE +PADDING_SIZE), 'down');
+		}
+        paths[c].width = OBJECT_SIZE;
+        paths[c].height = OBJECT_SIZE;
+       // paths[c].anchor.set(0.5, 0.5);
+        paths[c].inputEnabled = true;
+        paths[c].input.enableDrag();
+        paths[c].events.onInputOver.add(onOver, this);
+        paths[c].events.onInputOut.add(onOut, this);
+        paths[c].events.onDragStart.add(onDragStart, this);
+        paths[c].events.onDragStop.add(onDragStop, this);
     }
-
-    dragPosition = new Phaser.Point(card.x, card.y);
+	
+    dragPosition = new Phaser.Point(paths.x, paths.y);
 
 }
 
@@ -111,10 +145,33 @@ function onDragStart(sprite, pointer) {
 
 
 function onDragStop(sprite, pointer) {
-    if (!sprite.overlap(dropZone1))
+	for(c = 0; c < 8; c++)
     {
-        game.add.tween(sprite).to( { x: dragPosition.x, y: dragPosition.y }, 500, "Back.easeOut", true);
+        for(x = 0; x < 8; x++)
+        {
+			if(maps[x][c].x < pointer.x 
+				&& pointer.x < (maps[x][c].x + OBJECT_SIZE)
+				&& maps[x][c].y < pointer.y 
+				&& pointer.y < (maps[x][c].y + OBJECT_SIZE))
+				{
+					if(maps[x][c].type == PATH)
+					{
+						sprite.position.x = maps[x][c].x;
+						sprite.position.y = maps[x][c].y;
+						return;
+					}
+				}
+				else
+				{
+					continue;
+				}
+        }
     }
+	if(x >= 8 && c >= 8)
+	{
+		
+		game.add.tween(sprite).to( { x: dragPosition.x, y: dragPosition.y }, 500, "Back.easeOut", true);
+	}
 }
 
 function update () {
